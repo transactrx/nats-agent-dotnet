@@ -1,0 +1,9 @@
+bin/
+obj/
+artifacts/
+*.nupkg
+TestResults/
+.vs/
+.idea/
+*.user
+.DS_Store
