@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TransactRx.NatsAgent.Cli</RootNamespace>
+    <AssemblyName>nats-agents</AssemblyName>
+
+    <!-- Distributed as a .NET tool: dotnet tool install -g TransactRx.NatsAgent.Cli -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>nats-agents</ToolCommandName>
+    <PackageId>TransactRx.NatsAgent.Cli</PackageId>
+    <Version>0.0.0-dev</Version>
+    <Authors>RedSail Technologies</Authors>
+    <Description>Operator CLI for the NATS Agent Protocol: discover agents and network tools, inspect cards, chat with an agent, run a tool. .NET port of the Go nats-agents CLI.</Description>
+    <RepositoryUrl>https://github.com/transactrx/nats-agent-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../TransactRx.NatsAgent/TransactRx.NatsAgent.csproj" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>

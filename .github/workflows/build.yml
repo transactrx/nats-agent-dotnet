@@ -1,0 +1,36 @@
+# Builds and tests every push, like the Go library's workflow.
+name: .NET
+
+on:
+  push:
+    branches: [ "**" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      # Restore fails on any package (direct or transitive) with a known vulnerability:
+      # NuGet audit is on and warnings are errors (Directory.Build.props).
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      # The suite runs against a real nats-server — no docker needed.
+      - name: Test
+        run: dotnet test --no-build -c Release
+
+      - name: Check for outdated packages
+        run: dotnet list package --outdated
+
+      # Proves the packages can be produced; the release workflow publishes them.
+      - name: Pack
+        run: dotnet pack --no-build -c Release -o artifacts

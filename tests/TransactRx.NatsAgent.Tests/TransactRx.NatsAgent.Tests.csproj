@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- xunit v3 test projects are executables. -->
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TransactRx.NatsAgent.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!-- xUnit1051: tests pass their own tokens where cancellation is what is being tested. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="4.0.3" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="11.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/TransactRx.NatsAgent/TransactRx.NatsAgent.csproj" />
+    <!-- CliTests drives NatsAgentsCli.RunAsync in-process. -->
+    <ProjectReference Include="../../src/TransactRx.NatsAgent.Cli/TransactRx.NatsAgent.Cli.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
