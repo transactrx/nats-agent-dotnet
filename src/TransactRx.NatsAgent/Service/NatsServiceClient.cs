@@ -8,23 +8,42 @@ namespace TransactRx.NatsAgent.Service;
 /// <summary>
 /// The calling side of the service conventions (the Go <c>nats-service-client</c>): one
 /// request/reply with correlation headers, gzip of large bodies, chunked transfer both ways,
-/// and the error envelope turned into <see cref="NatsServiceException"/>.
+/// and the error envelope turned into <see cref="NatsServiceException"/>. Use it to call any
+/// other org service from an agent or tool, for example the inference gateway
+/// (<c>trx.inferenceGateway.invoke</c>).
 /// </summary>
-internal sealed class NatsServiceClient(
-    NatsConnection nc,
-    ILogger logger,
-    int maxSizeBeforeCompress = Framing.DefaultMaxSizeBeforeCompress,
-    int maxSizeBeforeChunk = Framing.DefaultMaxRequestSizeBeforeChunk)
+public sealed class NatsServiceClient
 {
+    private readonly NatsConnection nc;
+    private readonly ILogger logger;
+    private readonly int maxSizeBeforeCompress;
+    private readonly int maxSizeBeforeChunk;
+
+    /// <summary>A client on an existing connection, e.g. <c>agent.Connection</c>.</summary>
+    public NatsServiceClient(NatsConnection connection, ILogger? logger = null)
+        : this(connection, logger, Framing.DefaultMaxSizeBeforeCompress, Framing.DefaultMaxRequestSizeBeforeChunk)
+    {
+    }
+
+    internal NatsServiceClient(NatsConnection connection, ILogger? logger, int maxSizeBeforeCompress, int maxSizeBeforeChunk)
+    {
+        nc = connection;
+        this.logger = logger ?? StdoutLogger.Instance;
+        this.maxSizeBeforeCompress = maxSizeBeforeCompress;
+        this.maxSizeBeforeChunk = maxSizeBeforeChunk;
+    }
+
+    /// <summary>The connection requests are sent on.</summary>
     public NatsConnection Connection => nc;
 
     /// <summary>
-    /// Sends <paramref name="data"/> and returns the reply body.
+    /// Sends <paramref name="data"/> to <paramref name="subject"/> and returns the reply body,
+    /// decompressed and reassembled.
     /// </summary>
     /// <exception cref="NatsServiceException">The service answered with the error envelope.</exception>
     /// <exception cref="TimeoutException">No reply within <paramref name="timeout"/>.</exception>
     /// <exception cref="NatsNoRespondersException">Nothing is subscribed to the subject.</exception>
-    public async Task<byte[]> RequestAsync(string subject, NatsHeaders? extraHeaders, byte[] data, TimeSpan timeout, CancellationToken ct)
+    public async Task<byte[]> RequestAsync(string subject, NatsHeaders? extraHeaders, byte[] data, TimeSpan timeout, CancellationToken ct = default)
     {
         var messageId = Guid.NewGuid().ToString("D");
         var headers = new NatsHeaders { [Framing.MessageId] = messageId };

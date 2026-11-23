@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/samples/">
+    <Project Path="samples/BaseballAgent/BaseballAgent.csproj" />
     <Project Path="samples/SimpleAgent/SimpleAgent.csproj" />
   </Folder>
   <Folder Name="/src/">
