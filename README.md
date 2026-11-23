@@ -54,6 +54,34 @@ nats-agents -s nats://localhost:4222 chat simpleAgent "hello there"
 nats-agents -s nats://localhost:4222 run word_count '{"text":"one two three"}'
 ```
 
+### An agent with a model
+
+[`samples/BaseballAgent`](samples/BaseballAgent/Program.cs) is the shape of a real agent: it
+answers baseball questions with a model, and other agents can route questions to it.
+
+| Part | Where | What it shows |
+|---|---|---|
+| The card | `Program.cs` | A description and skills written as routing instructions: an orchestrator (rsAssistant) shows them to its own model, which picks this agent when a question matches |
+| The model | `InferenceGateway.cs` | Streaming calls to the org's inference gateway (`trx.inferenceGateway.invokeStream`) through `NatsServiceClient`; no vendor SDK and no model version in code |
+| The tool | `Program.cs` | `web_search`, found on the mesh with `ToolRegistry`, for anything newer than the model knows |
+| The loop | `Program.cs` | Ask the model, run the tools it asks for, ask again until it answers; text streams to the caller as it arrives |
+
+It needs a NATS server where the inference gateway is reachable (Development or Production,
+not a bare local `nats-server`):
+
+```bash
+export NATS_URL=... NATS_JWT=... NATS_KEY=...
+export APP_ID=baseballExpertAppId APP_FUNCTION_ID=baseballExpertFnId   # its identity registration
+export IDT_VALIDATION=true IDT_OBSERVE_ONLY=true                       # check callers' tokens, log only
+dotnet run --project samples/BaseballAgent
+
+nats-agents chat baseballExpert "What is the infield fly rule?"
+nats-agents chat baseballExpert "Who won the World Series this year?"
+```
+
+`AI_MODEL` picks the model as `lab/family` (default `anthropic/sonnet`, always the newest
+release) or a concrete model id.
+
 ## Serving an agent
 
 ```csharp
@@ -238,6 +266,7 @@ The wire behaviour is the same. The API follows .NET conventions:
 | `run.Events` channel | `ChannelReader<AgentEvent>` (`ReadAllAsync()`) |
 | `agent.CutReason(ctx)` | `turn.CutReason` |
 | `log.Printf` | `ILogger` (`AgentConfig.LoggerFactory`); by default the same one-line-per-entry output on stdout, so `IDT_METRIC` lines are never lost |
+| `nats-service-client` (a separate module) to call other org services | `NatsServiceClient`, included: `new NatsServiceClient(agent.Connection).RequestAsync(...)` |
 | One NATS connection per agent / per tool | One connection shared by an agent and all of a host's tools |
 
 Operational notes:
