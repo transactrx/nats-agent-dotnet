@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/BaseballAgent/BaseballAgent.csproj" />
+    <Project Path="samples/SimpleAgent/SimpleAgent.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/TransactRx.NatsAgent.Cli/TransactRx.NatsAgent.Cli.csproj" />
+    <Project Path="src/TransactRx.NatsAgent/TransactRx.NatsAgent.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TransactRx.NatsAgent.Tests/TransactRx.NatsAgent.Tests.csproj" />
+  </Folder>
+</Solution>

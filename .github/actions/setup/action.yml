@@ -1,0 +1,27 @@
+name: Set up .NET and nats-server
+description: Installs the .NET SDK pinned by global.json and the nats-server binary the tests start.
+inputs:
+  nats-server-version:
+    description: nats-server release to test against (the Go library embeds the same line).
+    default: v2.14.3
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-dotnet@v6
+      with:
+        global-json-file: global.json
+
+    # The test fixture starts a real nats-server; verified against the release checksums.
+    - name: Install nats-server
+      shell: bash
+      run: |
+        set -euo pipefail
+        v="${{ inputs.nats-server-version }}"
+        base="https://github.com/nats-io/nats-server/releases/download/${v}"
+        file="nats-server-${v}-linux-amd64.tar.gz"
+        curl -fsSL -o "/tmp/${file}" "${base}/${file}"
+        curl -fsSL -o /tmp/SHA256SUMS "${base}/SHA256SUMS"
+        (cd /tmp && grep " ${file}\$" SHA256SUMS | sha256sum -c -)
+        tar -xzf "/tmp/${file}" -C /tmp
+        sudo install "/tmp/nats-server-${v}-linux-amd64/nats-server" /usr/local/bin/nats-server
+        nats-server --version
